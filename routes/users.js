@@ -15,8 +15,11 @@ router.get('/protected', (req, res, next) => {
 router.post('/login', function(req, res, next){});
 
 router.post('/register', function(req, res, next){
+  console.log("made req", req.body)
+
+  console.log("req.body.password", req.body.password, req.body.username)
   const saltHash = utils.genPassword(req.body.password);
-  
+  console.log("password register>>>>", password )
   const salt = saltHash.salt;
   const hash = saltHash.hash;
 
@@ -28,9 +31,15 @@ router.post('/register', function(req, res, next){
   try {
     newUser.save()
       .then((user) => {
+
+        //
+        const jwt = utils.issueJWT(user) 
+
         //returning a success message as well as the user, more useful than just returning the user
         //the jwt will be issued here, jwt will be created in the utils
-        res.json({ success: true, user: user });
+        //I took care of the utils and imported the function to issue my jwt from utils above these lines
+        res.json({ success: true, user: user, token: jwt.token, expiresIn: jwt.expires});
+        //now after successful registry frontend client will recieve this
       });
   } catch (err) {
     res.json({ success: false, msg: err });
