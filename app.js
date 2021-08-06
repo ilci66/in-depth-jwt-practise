@@ -30,7 +30,7 @@ require('./models/user');
 // app.use(express.json());
 // app.use(express.urlencoded({extended: true}));
 
-app.use(bodyParser.json({extended: true}));
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 // Allows our Angular application to make HTTP requests to Express application
