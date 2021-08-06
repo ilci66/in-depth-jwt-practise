@@ -7,19 +7,37 @@ const utils = require('../lib/utils');
 //something else is always good
 
 
-// TODO
-router.get('/protected', (req, res, next) => {
+//up until this point all I did was issuing the jwt now gonna use the passport-jwt to verify
+router.get('/protected', passport.authenticate('jwt', { session: false }), (req, res, next) => {
+  res.status(200).json({ success: true, msg: "You are successfully authenticated to this route!"});
 });
 
-// TODO
-router.post('/login', function(req, res, next){});
+// Validate an existing user and issue a JWT
+router.post('/login', function(req, res, next){
+
+  User.findOne({ username: req.body.username })
+      .then((user) => {
+          if (!user) {
+            return res.status(401).json({ success: false, msg: "could not find user" });
+          }
+          // Function defined at bottom of app.js, works like bcrypt.compare()
+          const isValid = utils.validPassword(req.body.password, user.hash, user.salt);
+          if (isValid) {
+            const tokenObject = utils.issueJWT(user);
+            console.log('login backend user obj >>> ', user)
+            res.status(200).json({ success: true, token: tokenObject.token, expiresIn: tokenObject.expires });
+          } else {
+            res.status(401).json({ success: false, msg: "you entered the wrong password" });
+          }
+      })
+      .catch((err) => {
+        next(err);
+      });
+});
 
 router.post('/register', function(req, res, next){
-  console.log("made req", req.body)
-
-  console.log("req.body.password", req.body.password, req.body.username)
+  console.log("req.body >>", req.body.password, req.body.username)
   const saltHash = utils.genPassword(req.body.password);
-  console.log("password register>>>>", password )
   const salt = saltHash.salt;
   const hash = saltHash.hash;
 
